@@ -104,6 +104,18 @@ class ViagemBHApp(ctk.CTk):
                 },
             ],
             "depositos": [],
+                        "depositos": [],
+            
+            "checklist": [
+                {"item": "Comprar passagem aérea BSB - CNF", "cat": "Reservas", "feito": False},
+                {"item": "Reservar Airbnb no Lourdes", "cat": "Reservas", "feito": False},
+                {"item": "Alugar carro compacto automático", "cat": "Reservas", "feito": False},
+                {"item": "Reservar mesa Glouton, Pacato e Trintaeum", "cat": "Reservas", "feito": False},
+                {"item": "Emitir ingressos gratuitos Inhotim (12/05)", "cat": "Reservas", "feito": False},
+                {"item": "Separar CNH e cartão para caução do carro", "cat": "Malas", "feito": False},
+                {"item": "Roupas esporte fino + jaqueta leve", "cat": "Malas", "feito": False},
+                {"item": "Tênis confortável + carregador portátil", "cat": "Malas", "feito": False},
+            ],
         }
 
     def sincronizar_da_nuvem(self):
@@ -124,6 +136,12 @@ class ViagemBHApp(ctk.CTk):
             self.lbl_status.configure(
                 text="🔴 Sem internet", text_color="#ef4444"
             )
+        if nuvem:
+            self.dados["gastos"] = nuvem.get("gastos") or []
+            self.dados["roteiro"] = nuvem.get("roteiro") or []
+            self.dados["depositos"] = nuvem.get("depositos") or []
+            self.dados["checklist"] = nuvem.get("checklist") or []
+            
         self.atualizar_tudo()
 
     def salvar_dados(self):
@@ -206,6 +224,10 @@ class ViagemBHApp(ctk.CTk):
         self.montar_aba_cofrinho()
         self.montar_aba_gastos()
         self.montar_aba_roteiro()
+        self.tab_cofrinho = self.tabview.add("🏦 Cofrinho & Gráfico")
+        self.tab_gastos = self.tabview.add("💰 Orçamento da Viagem")
+        self.tab_roteiro = self.tabview.add("🗺️ Roteiro Dia a Dia")
+        self.tab_check = self.tabview.add("✅ Checklist")
 
     def criar_card(self, parent, titulo, valor, cor):
         card = ctk.CTkFrame(parent, width=220, height=85, corner_radius=12)
@@ -431,6 +453,80 @@ class ViagemBHApp(ctk.CTk):
             self.dados["roteiro"].pop(self.tree_roteiro.index(sel[0]))
             self.salvar_dados()
 
+    def montar_aba_checklist(self):
+        form = ctk.CTkFrame(self.tab_check, fg_color="transparent")
+        form.pack(fill="x", pady=8)
+
+        self.entry_chk_item = ctk.CTkEntry(
+            form, placeholder_text="Novo item (ex: Levar protetor solar)...", width=420
+        )
+        self.entry_chk_item.pack(side="left", padx=5)
+
+        self.combo_chk_cat = ctk.CTkComboBox(
+            form, values=["Reservas", "Malas", "Documentos"], width=150
+        )
+        self.combo_chk_cat.pack(side="left", padx=5)
+
+        ctk.CTkButton(
+            form, text="+ Adicionar", width=110, command=self.adicionar_checklist
+        ).pack(side="left", padx=5)
+
+        ctk.CTkButton(
+            form,
+            text="Excluir",
+            width=80,
+            fg_color="#ef4444",
+            hover_color="#dc2626",
+            command=self.remover_checklist,
+        ).pack(side="left", padx=5)
+
+        prog_frame = ctk.CTkFrame(self.tab_check, fg_color="transparent")
+        prog_frame.pack(fill="x", padx=5, pady=(0, 8))
+
+        self.lbl_progresso = ctk.CTkLabel(
+            prog_frame, text="Progresso: 0% (0/0)", font=ctk.CTkFont(size=12, weight="bold")
+        )
+        self.lbl_progresso.pack(side="left", padx=(0, 10))
+
+        self.barra_progresso = ctk.CTkProgressBar(prog_frame, width=700)
+        self.barra_progresso.set(0)
+        self.barra_progresso.pack(side="left", fill="x", expand=True)
+
+        self.tree_check = ttk.Treeview(
+            self.tab_check, columns=("status", "cat", "item"), show="headings", height=11
+        )
+        self.tree_check.heading("status", text="Status (Duplo clique)")
+        self.tree_check.heading("cat", text="Categoria")
+        self.tree_check.heading("item", text="Tarefa / Item da Mala")
+        self.tree_check.column("status", width=150, anchor="center")
+        self.tree_check.column("cat", width=130, anchor="center")
+        self.tree_check.column("item", width=610)
+        self.tree_check.pack(fill="both", expand=True)
+        self.tree_check.bind("<Double-1>", self.alternar_checklist)
+
+    def adicionar_checklist(self):
+        item = self.entry_chk_item.get().strip()
+        if item:
+            self.dados["checklist"].append(
+                {"item": item, "cat": self.combo_chk_cat.get(), "feito": False}
+            )
+            self.entry_chk_item.delete(0, "end")
+            self.salvar_dados()
+
+    def alternar_checklist(self, event):
+        sel = self.tree_check.selection()
+        if sel:
+            idx = self.tree_check.index(sel[0])
+            self.dados["checklist"][idx]["feito"] = not self.dados["checklist"][idx]["feito"]
+            self.salvar_dados()
+
+    def remover_checklist(self):
+        sel = self.tree_check.selection()
+        if sel:
+            self.dados["checklist"].pop(self.tree_check.index(sel[0]))
+            self.salvar_dados()
+        
+
     def formatar_moeda(self, v):
         return (
             f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -576,6 +672,24 @@ class ViagemBHApp(ctk.CTk):
         )
         self.lbl_parte_dela.configure(text=self.formatar_moeda(tot_ela))
         self.desenhar_grafico(pts, tot_g)
+
+        for item in self.tree_check.get_children():
+            self.tree_check.delete(item)
+
+        feitos = 0
+        total_chk = len(self.dados.get("checklist", []))
+        for c in self.dados.get("checklist", []):
+            if c["feito"]:
+                feitos += 1
+            st = "✅ Concluído" if c["feito"] else "⬜ Pendente"
+            self.tree_check.insert("", "end", values=(st, c["cat"], c["item"]))
+
+        pct = (feitos / total_chk) if total_chk > 0 else 0
+        self.barra_progresso.set(pct)
+        self.lbl_progresso.configure(
+            text=f"Progresso: {int(pct * 100)}% ({feitos}/{total_chk})"
+        )
+
 
     def exportar_excel(self):
         wb = Workbook()
