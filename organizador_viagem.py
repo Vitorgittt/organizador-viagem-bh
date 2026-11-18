@@ -20,7 +20,7 @@ class ViagemBHApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Nossa Viagem BH • Sincronizado na Nuvem ☁️")
-        self.geometry("980x680")
+        self.geometry("980x710")
         self.resizable(False, False)
         self.dados = self.dados_padrao()
         self.criar_interface()
@@ -64,42 +64,52 @@ class ViagemBHApp(ctk.CTk):
             "roteiro": [
                 {
                     "dia": "Dia 1 • 08/05 (Sáb)",
+                    "cat": "BH Centro-Sul",
                     "atividade": "Chegada + Jantar no Glouton",
                 },
                 {
                     "dia": "Dia 2 • 09/05 (Dom)",
+                    "cat": "BH Centro-Sul",
                     "atividade": "Circuito Liberdade + Almoço no Ninita",
                 },
                 {
                     "dia": "Dia 3 • 10/05 (Seg)",
+                    "cat": "BH Centro-Sul",
                     "atividade": "Mercado Central + Bistrô Taste-Vin",
                 },
                 {
                     "dia": "Dia 4 • 11/05 (Ter)",
+                    "cat": "Bate-Volta",
                     "atividade": "Bate-volta romântico a Ouro Preto",
                 },
                 {
                     "dia": "Dia 5 • 12/05 (Qua)",
+                    "cat": "Bate-Volta",
                     "atividade": "Instituto Inhotim (Entrada gratuita)",
                 },
                 {
                     "dia": "Dia 6 • 13/05 (Qui)",
+                    "cat": "Pampulha / Outros",
                     "atividade": "Lagoa da Pampulha + Jantar no O Conde",
                 },
                 {
                     "dia": "Dia 7 • 14/05 (Sex)",
+                    "cat": "BH Centro-Sul",
                     "atividade": "Noite cultural e drinks na Savassi",
                 },
                 {
                     "dia": "Dia 8 • 15/05 (Sáb)",
+                    "cat": "Bate-Volta",
                     "atividade": "Passeio e almoço na Serra em Macacos",
                 },
                 {
                     "dia": "Dia 9 • 16/05 (Dom)",
+                    "cat": "BH Centro-Sul",
                     "atividade": "Menu Degustação no Pacato + Mirante",
                 },
                 {
                     "dia": "Dia 10 • 17/05 (Seg)",
+                    "cat": "BH Centro-Sul",
                     "atividade": "Jantar de despedida no Trintaeum",
                 },
             ],
@@ -132,7 +142,7 @@ class ViagemBHApp(ctk.CTk):
                 },
                 {
                     "item": "Separar CNH e cartão para caução do carro",
-                    "cat": "Malas",
+                    "cat": "Documentos",
                     "feito": False,
                 },
                 {
@@ -185,6 +195,7 @@ class ViagemBHApp(ctk.CTk):
         self.sincronizar_da_nuvem()
         self.after(5000, self.auto_atualizar)
 
+
     def criar_interface(self):
         header = ctk.CTkFrame(self, height=70, corner_radius=0)
         header.pack(fill="x")
@@ -209,7 +220,7 @@ class ViagemBHApp(ctk.CTk):
         ).pack(side="right", padx=25, pady=18)
 
         cards = ctk.CTkFrame(self, fg_color="transparent")
-        cards.pack(fill="x", padx=20, pady=15)
+        cards.pack(fill="x", padx=20, pady=12)
         self.lbl_total_viagem = self.criar_card(
             cards, "Custo Total Planejado", "R$ 0,00", "#f59e0b"
         )
@@ -223,7 +234,7 @@ class ViagemBHApp(ctk.CTk):
             cards, "Parte Dela (Meiado)", "R$ 0,00", "#a855f7"
         )
 
-        self.tabview = ctk.CTkTabview(self, width=940, height=460)
+        self.tabview = ctk.CTkTabview(self, width=940, height=500)
         self.tabview.pack(padx=20, pady=5)
         self.tab_cofrinho = self.tabview.add("🏦 Cofrinho & Gráfico")
         self.tab_gastos = self.tabview.add("💰 Orçamento da Viagem")
@@ -251,6 +262,13 @@ class ViagemBHApp(ctk.CTk):
         self.montar_aba_gastos()
         self.montar_aba_roteiro()
         self.montar_aba_checklist()
+
+    def aplicar_cores_tabela(self, tree):
+        tree.tag_configure("roxo", background="#2e1065", foreground="#e9d5ff")
+        tree.tag_configure("azul", background="#172554", foreground="#bfdbfe")
+        tree.tag_configure("verde", background="#064e3b", foreground="#a7f3d0")
+        tree.tag_configure("ambar", background="#451a03", foreground="#fde68a")
+        tree.tag_configure("cinza", background="#18181b", foreground="#e4e4e7")
 
     def criar_card(self, parent, titulo, valor, cor):
         card = ctk.CTkFrame(parent, width=220, height=85, corner_radius=12)
@@ -333,7 +351,7 @@ class ViagemBHApp(ctk.CTk):
 
     def montar_aba_gastos(self):
         form = ctk.CTkFrame(self.tab_gastos, fg_color="transparent")
-        form.pack(fill="x", pady=10)
+        form.pack(fill="x", pady=8)
         self.entry_desc = ctk.CTkEntry(
             form, placeholder_text="Descrição do gasto...", width=350
         )
@@ -362,7 +380,7 @@ class ViagemBHApp(ctk.CTk):
             self.tab_gastos,
             columns=("desc", "tipo", "total", "ele", "ela"),
             show="headings",
-            height=12,
+            height=11,
         )
         for col, txt, w, anc in [
             ("desc", "Item / Experiência", 340, "w"),
@@ -373,17 +391,49 @@ class ViagemBHApp(ctk.CTk):
         ]:
             self.tree_gastos.heading(col, text=txt)
             self.tree_gastos.column(col, width=w, anchor=anc)
+        self.aplicar_cores_tabela(self.tree_gastos)
         self.tree_gastos.pack(fill="both", expand=True, pady=5)
+
+        barra_limpar = ctk.CTkFrame(self.tab_gastos, fg_color="transparent")
+        barra_limpar.pack(fill="x", pady=(4, 0))
+        ctk.CTkLabel(
+            barra_limpar,
+            text="🟣 Meiado   🔵 100% Ele   🟢 100% Ela",
+            font=ctk.CTkFont(size=12),
+            text_color="#a1a1aa",
+        ).pack(side="left", padx=5)
+        ctk.CTkButton(
+            barra_limpar,
+            text="🗑️ Limpar Tudo da Aba",
+            width=150,
+            fg_color="#7f1d1d",
+            hover_color="#991b1b",
+            command=lambda: self.limpar_aba("gastos", "Orçamento"),
+        ).pack(side="right", padx=5)
+        ctk.CTkButton(
+            barra_limpar,
+            text="Apagar Divisão Selecionada",
+            width=180,
+            fg_color="#3f3f46",
+            hover_color="#52525b",
+            command=lambda: self.limpar_por_categoria("gastos", "tipo", self.combo_tipo.get()),
+        ).pack(side="right", padx=5)
 
     def montar_aba_roteiro(self):
         form = ctk.CTkFrame(self.tab_roteiro, fg_color="transparent")
-        form.pack(fill="x", pady=10)
+        form.pack(fill="x", pady=8)
         self.entry_dia = ctk.CTkEntry(
-            form, placeholder_text="Dia (ex: Dia 11 • 18/05)", width=210
+            form, placeholder_text="Dia (ex: Dia 11 • 18/05)", width=180
         )
         self.entry_dia.pack(side="left", padx=5)
+        self.combo_rot_cat = ctk.CTkComboBox(
+            form,
+            values=["BH Centro-Sul", "Bate-Volta", "Pampulha / Outros"],
+            width=160,
+        )
+        self.combo_rot_cat.pack(side="left", padx=5)
         self.entry_ativ = ctk.CTkEntry(
-            form, placeholder_text="Atividade ou Restaurante...", width=470
+            form, placeholder_text="Atividade ou Restaurante...", width=340
         )
         self.entry_ativ.pack(side="left", padx=5)
         ctk.CTkButton(
@@ -400,15 +450,45 @@ class ViagemBHApp(ctk.CTk):
 
         self.tree_roteiro = ttk.Treeview(
             self.tab_roteiro,
-            columns=("dia", "atividade"),
+            columns=("dia", "cat", "atividade"),
             show="headings",
-            height=12,
+            height=11,
         )
         self.tree_roteiro.heading("dia", text="Data / Dia")
+        self.tree_roteiro.heading("cat", text="Região / Tipo")
         self.tree_roteiro.heading("atividade", text="Programação Planejada")
-        self.tree_roteiro.column("dia", width=220)
-        self.tree_roteiro.column("atividade", width=670)
+        self.tree_roteiro.column("dia", width=180)
+        self.tree_roteiro.column("cat", width=160, anchor="center")
+        self.tree_roteiro.column("atividade", width=550)
+        self.aplicar_cores_tabela(self.tree_roteiro)
         self.tree_roteiro.pack(fill="both", expand=True, pady=5)
+
+        barra_limpar = ctk.CTkFrame(self.tab_roteiro, fg_color="transparent")
+        barra_limpar.pack(fill="x", pady=(4, 0))
+        ctk.CTkLabel(
+            barra_limpar,
+            text="🔵 BH Centro-Sul   🟠 Bate-Volta   🟣 Pampulha / Outros",
+            font=ctk.CTkFont(size=12),
+            text_color="#a1a1aa",
+        ).pack(side="left", padx=5)
+        ctk.CTkButton(
+            barra_limpar,
+            text="🗑️ Limpar Tudo da Aba",
+            width=150,
+            fg_color="#7f1d1d",
+            hover_color="#991b1b",
+            command=lambda: self.limpar_aba("roteiro", "Roteiro"),
+        ).pack(side="right", padx=5)
+        ctk.CTkButton(
+            barra_limpar,
+            text="Apagar Região Selecionada",
+            width=180,
+            fg_color="#3f3f46",
+            hover_color="#52525b",
+            command=lambda: self.limpar_por_categoria(
+                "roteiro", "cat", self.combo_rot_cat.get()
+            ),
+        ).pack(side="right", padx=5)
 
     def montar_aba_checklist(self):
         form = ctk.CTkFrame(self.tab_check, fg_color="transparent")
@@ -436,7 +516,7 @@ class ViagemBHApp(ctk.CTk):
         ).pack(side="left", padx=5)
 
         prog = ctk.CTkFrame(self.tab_check, fg_color="transparent")
-        prog.pack(fill="x", padx=5, pady=(0, 8))
+        prog.pack(fill="x", padx=5, pady=(0, 6))
         self.lbl_progresso = ctk.CTkLabel(
             prog,
             text="Progresso: 0% (0/0)",
@@ -451,7 +531,7 @@ class ViagemBHApp(ctk.CTk):
             self.tab_check,
             columns=("status", "cat", "item"),
             show="headings",
-            height=11,
+            height=10,
         )
         self.tree_check.heading("status", text="Status (Duplo clique)")
         self.tree_check.heading("cat", text="Categoria")
@@ -459,8 +539,56 @@ class ViagemBHApp(ctk.CTk):
         self.tree_check.column("status", width=150, anchor="center")
         self.tree_check.column("cat", width=130, anchor="center")
         self.tree_check.column("item", width=610)
+        self.aplicar_cores_tabela(self.tree_check)
         self.tree_check.pack(fill="both", expand=True)
         self.tree_check.bind("<Double-1>", self.alternar_checklist)
+
+        barra_limpar = ctk.CTkFrame(self.tab_check, fg_color="transparent")
+        barra_limpar.pack(fill="x", pady=(6, 0))
+        ctk.CTkLabel(
+            barra_limpar,
+            text="🟠 Reservas   🔵 Malas   🟣 Documentos   🟢 Concluído",
+            font=ctk.CTkFont(size=12),
+            text_color="#a1a1aa",
+        ).pack(side="left", padx=5)
+        ctk.CTkButton(
+            barra_limpar,
+            text="🗑️ Limpar Tudo da Aba",
+            width=150,
+            fg_color="#7f1d1d",
+            hover_color="#991b1b",
+            command=lambda: self.limpar_aba("checklist", "Checklist"),
+        ).pack(side="right", padx=5)
+        ctk.CTkButton(
+            barra_limpar,
+            text="Apagar Categoria Selecionada",
+            width=190,
+            fg_color="#3f3f46",
+            hover_color="#52525b",
+            command=lambda: self.limpar_por_categoria(
+                "checklist", "cat", self.combo_chk_cat.get()
+            ),
+        ).pack(side="right", padx=5)
+
+    def limpar_por_categoria(self, chave_lista, campo_cat, valor_cat):
+        if messagebox.askyesno(
+            "Confirmar Exclusão",
+            f"Deseja apagar TODOS os itens da categoria '{valor_cat}'?",
+        ):
+            self.dados[chave_lista] = [
+                item
+                for item in self.dados.get(chave_lista, [])
+                if item.get(campo_cat) != valor_cat
+            ]
+            self.salvar_dados()
+
+    def limpar_aba(self, chave_lista, nome_aba):
+        if messagebox.askyesno(
+            "Limpar Aba Completa",
+            f"Tem certeza que deseja apagar TODOS os itens da aba '{nome_aba}'?\nEssa ação será sincronizada na nuvem.",
+        ):
+            self.dados[chave_lista] = []
+            self.salvar_dados()
 
     def adicionar_deposito(self):
         data, desc = (
@@ -485,7 +613,7 @@ class ViagemBHApp(ctk.CTk):
     def remover_deposito(self):
         sel = self.tree_depositos.selection()
         if sel:
-            self.dados["depositos"].pop(self.tree_depositos.index(sel[0]))
+            self.dados["depositos"].pop(self.tree_depositos.index(sel))
             self.salvar_dados()
 
     def adicionar_gasto(self):
@@ -508,7 +636,7 @@ class ViagemBHApp(ctk.CTk):
     def remover_gasto(self):
         sel = self.tree_gastos.selection()
         if sel:
-            self.dados["gastos"].pop(self.tree_gastos.index(sel[0]))
+            self.dados["gastos"].pop(self.tree_gastos.index(sel))
             self.salvar_dados()
 
     def adicionar_roteiro(self):
@@ -517,7 +645,13 @@ class ViagemBHApp(ctk.CTk):
             self.entry_ativ.get().strip(),
         )
         if dia and ativ:
-            self.dados["roteiro"].append({"dia": dia, "atividade": ativ})
+            self.dados["roteiro"].append(
+                {
+                    "dia": dia,
+                    "cat": self.combo_rot_cat.get(),
+                    "atividade": ativ,
+                }
+            )
             self.entry_dia.delete(0, "end")
             self.entry_ativ.delete(0, "end")
             self.salvar_dados()
@@ -525,7 +659,7 @@ class ViagemBHApp(ctk.CTk):
     def remover_roteiro(self):
         sel = self.tree_roteiro.selection()
         if sel:
-            self.dados["roteiro"].pop(self.tree_roteiro.index(sel[0]))
+            self.dados["roteiro"].pop(self.tree_roteiro.index(sel))
             self.salvar_dados()
 
     def adicionar_checklist(self):
@@ -544,7 +678,7 @@ class ViagemBHApp(ctk.CTk):
     def alternar_checklist(self, event):
         sel = self.tree_check.selection()
         if sel:
-            idx = self.tree_check.index(sel[0])
+            idx = self.tree_check.index(sel)
             self.dados["checklist"][idx]["feito"] = not self.dados[
                 "checklist"
             ][idx]["feito"]
@@ -553,8 +687,7 @@ class ViagemBHApp(ctk.CTk):
     def remover_checklist(self):
         sel = self.tree_check.selection()
         if sel:
-            self.dados["checklist"].pop(self.tree_check.index(sel[0]))
-            self.salvar_dados()
+            self.dados["checklist"].pop(self.tree_check.index(sel))
 
     def formatar_moeda(self, v):
         return (
@@ -660,6 +793,11 @@ class ViagemBHApp(ctk.CTk):
             p_ele = v / 2 if t == "Meiado (50/50)" else (v if t == "100% Ele" else 0.0)
             p_ela = v / 2 if t == "Meiado (50/50)" else (v if t == "100% Ela" else 0.0)
             tot_ela += p_ela
+            cor_tag = (
+                "roxo"
+                if t == "Meiado (50/50)"
+                else ("azul" if t == "100% Ele" else "verde")
+            )
             self.tree_gastos.insert(
                 "",
                 "end",
@@ -670,6 +808,7 @@ class ViagemBHApp(ctk.CTk):
                     self.formatar_moeda(p_ele),
                     self.formatar_moeda(p_ela),
                 ),
+                tags=(cor_tag,),
             )
 
         acum = 0.0
@@ -689,8 +828,17 @@ class ViagemBHApp(ctk.CTk):
             )
 
         for r in self.dados["roteiro"]:
+            cat_r = r.get("cat", "BH Centro-Sul")
+            cor_r = (
+                "ambar"
+                if cat_r == "Bate-Volta"
+                else ("roxo" if cat_r == "Pampulha / Outros" else "azul")
+            )
             self.tree_roteiro.insert(
-                "", "end", values=(r["dia"], r["atividade"])
+                "",
+                "end",
+                values=(r["dia"], cat_r, r["atividade"]),
+                tags=(cor_r,),
             )
 
         feitos = 0
@@ -699,7 +847,22 @@ class ViagemBHApp(ctk.CTk):
             if c["feito"]:
                 feitos += 1
             st = "✅ Concluído" if c["feito"] else "⬜ Pendente"
-            self.tree_check.insert("", "end", values=(st, c["cat"], c["item"]))
+            cat_c = c.get("cat", "Malas")
+            cor_c = (
+                "verde"
+                if c["feito"]
+                else (
+                    "ambar"
+                    if cat_c == "Reservas"
+                    else ("roxo" if cat_c == "Documentos" else "azul")
+                )
+            )
+            self.tree_check.insert(
+                "",
+                "end",
+                values=(st, cat_c, c["item"]),
+                tags=(cor_c,),
+            )
 
         pct = (feitos / len(lista_chk)) if lista_chk else 0
         self.barra_progresso.set(pct)
@@ -773,12 +936,12 @@ class ViagemBHApp(ctk.CTk):
         c_dep.number_format = m_fmt
 
         ws3 = wb.create_sheet("Roteiro 08 a 18 Maio")
-        ws3.append(["Data / Dia", "Programação"])
-        for c in range(1, 3):
+        ws3.append(["Data / Dia", "Região / Tipo", "Programação"])
+        for c in range(1, 4):
             ws3.cell(1, c).fill = h_fill
             ws3.cell(1, c).font = h_font
         for r in self.dados["roteiro"]:
-            ws3.append([r["dia"], r["atividade"]])
+            ws3.append([r["dia"], r.get("cat", "BH Centro-Sul"), r["atividade"]])
 
         ws4 = wb.create_sheet("Checklist Malas e Reservas")
         ws4.append(["Status", "Categoria", "Item"])
@@ -794,7 +957,7 @@ class ViagemBHApp(ctk.CTk):
 
         for ws in (ws1, ws2, ws3, ws4):
             for col in ws.columns:
-                ws.column_dimensions[col[0].column_letter].width = (
+                ws.column_dimensions[col.column_letter].width = (
                     max(len(str(c.value or "")) for c in col) + 6
                 )
 
